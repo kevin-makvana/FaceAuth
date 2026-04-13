@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FaceAuth — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c14;
+    --surface: #0f1520;
+    --surface2: #151d2e;
+    --border: rgba(99,179,237,0.12);
+    --accent: #63b3ed;
+    --accent2: #4fd1c5;
+    --green: #68d391;
+    --purple: #b794f4;
+    --text: #e2e8f0;
+    --muted: #718096;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family:'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(99,179,237,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 90%, rgba(104,211,145,0.05) 0%, transparent 60%);
+    pointer-events:none; z-index:0;
+  }
+
+  .grid-bg {
+    position:fixed; inset:0; z-index:0;
+    background-image:
+      linear-gradient(rgba(99,179,237,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99,179,237,0.025) 1px, transparent 1px);
+    background-size:40px 40px;
+    pointer-events:none;
+  }
+
+  /* Header */
+  header {
+    position:relative; z-index:10;
+    padding: 0 32px;
+    height: 64px;
+    display:flex; align-items:center; justify-content:space-between;
+    border-bottom: 1px solid var(--border);
+    background: rgba(15,21,32,0.8);
+    backdrop-filter: blur(12px);
+  }
+
+  .logo {
+    display:flex; align-items:center; gap:10px;
+    font-family:'Syne', sans-serif;
+    font-size:18px;
+    font-weight:800;
+    background: linear-gradient(135deg, var(--text), var(--accent));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  }
+
+  .logo-icon {
+    width:32px; height:32px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:16px;
+  }
+
+  .header-right {
+    display:flex; align-items:center; gap:12px;
+  }
+
+  .verified-badge {
+    display:flex; align-items:center; gap:6px;
+    padding: 5px 12px;
+    border-radius:20px;
+    background: rgba(104,211,145,0.1);
+    border: 1px solid rgba(104,211,145,0.25);
+    font-size:12px;
+    color: var(--green);
+  }
+
+  .verified-dot {
+    width:7px; height:7px;
+    border-radius:50%;
+    background: var(--green);
+    animation: pulse-green 2s infinite;
+  }
+
+  @keyframes pulse-green {
+    0%,100%{opacity:1; box-shadow:0 0 0 0 rgba(104,211,145,0.4)}
+    50%{opacity:0.8; box-shadow:0 0 0 4px rgba(104,211,145,0)}
+  }
+
+  .logout-btn {
+    padding: 7px 14px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius:8px;
+    color: var(--muted);
+    font-size:13px;
+    cursor:pointer;
+    font-family:'DM Sans', sans-serif;
+    transition:all 0.2s;
+  }
+  .logout-btn:hover { border-color:rgba(252,129,129,0.4); color:#fc8181; }
+
+  /* Main */
+  main {
+    position:relative; z-index:1;
+    max-width:1000px;
+    margin:0 auto;
+    padding:40px 24px;
+  }
+
+  /* Welcome hero */
+  .welcome-hero {
+    margin-bottom:40px;
+    opacity:0;
+    animation: fade-up 0.7s ease forwards;
+  }
+
+  @keyframes fade-up {
+    from { opacity:0; transform:translateY(20px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  .greeting {
+    font-size:15px;
+    color: var(--muted);
+    letter-spacing:0.5px;
+    margin-bottom:8px;
+    display:flex; align-items:center; gap:8px;
+  }
+
+  .greeting-dot {
+    width:6px; height:6px; border-radius:50%;
+    background: var(--green);
+  }
+
+  .welcome-name {
+    font-family:'Syne', sans-serif;
+    font-size:clamp(32px, 5vw, 52px);
+    font-weight:800;
+    line-height:1.1;
+    background: linear-gradient(135deg, var(--text) 40%, var(--accent) 100%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    margin-bottom:12px;
+  }
+
+  .welcome-sub {
+    color: var(--muted);
+    font-size:15px;
+    max-width:460px;
+  }
+
+  /* Stats cards */
+  .stats-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+    gap:16px;
+    margin-bottom:32px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius:16px;
+    padding:20px;
+    opacity:0;
+    animation: fade-up 0.6s ease forwards;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .stat-card:hover { border-color:rgba(99,179,237,0.25); transform:translateY(-2px); }
+  .stat-card:nth-child(1) { animation-delay:0.15s; }
+  .stat-card:nth-child(2) { animation-delay:0.25s; }
+  .stat-card:nth-child(3) { animation-delay:0.35s; }
+
+  .stat-icon {
+    font-size:22px;
+    margin-bottom:12px;
+    display:block;
+  }
+
+  .stat-label {
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.8px;
+    color: var(--muted);
+    margin-bottom:6px;
+  }
+
+  .stat-value {
+    font-family:'Syne', sans-serif;
+    font-size:22px;
+    font-weight:700;
+    color: var(--text);
+  }
+
+  .stat-value.green { color: var(--green); }
+  .stat-value.accent { color: var(--accent); }
+
+  /* Info panel */
+  .info-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius:20px;
+    overflow:hidden;
+    margin-bottom:24px;
+    opacity:0;
+    animation: fade-up 0.6s 0.4s ease forwards;
+  }
+
+  .panel-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    display:flex; align-items:center; gap:10px;
+  }
+
+  .panel-header h2 {
+    font-family:'Syne', sans-serif;
+    font-size:15px;
+    font-weight:700;
+  }
+
+  .panel-body { padding:24px; }
+
+  .info-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
+    gap:20px;
+  }
+
+  .info-field { }
+  .info-field label {
+    display:block;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.8px;
+    color: var(--muted);
+    margin-bottom:6px;
+  }
+  .info-field .value {
+    font-size:15px;
+    color: var(--text);
+    font-weight:500;
+  }
+
+  /* Security section */
+  .security-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius:20px;
+    overflow:hidden;
+    opacity:0;
+    animation: fade-up 0.6s 0.55s ease forwards;
+  }
+
+  .security-items { padding:8px 0; }
+
+  .security-item {
+    display:flex; align-items:center;
+    padding:14px 24px;
+    gap:14px;
+    transition:background 0.2s;
+  }
+  .security-item:hover { background:rgba(99,179,237,0.03); }
+
+  .sec-icon {
+    width:36px; height:36px;
+    border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:16px;
+    flex-shrink:0;
+  }
+  .sec-icon.green { background:rgba(104,211,145,0.12); }
+  .sec-icon.blue  { background:rgba(99,179,237,0.12); }
+  .sec-icon.purple{ background:rgba(183,148,244,0.12); }
+
+  .sec-info { flex:1; }
+  .sec-info strong { display:block; font-size:14px; font-weight:500; margin-bottom:2px; }
+  .sec-info span   { font-size:12px; color:var(--muted); }
+
+  .sec-badge {
+    padding:3px 10px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:600;
+  }
+  .sec-badge.enabled {
+    background:rgba(104,211,145,0.1);
+    color:var(--green);
+    border:1px solid rgba(104,211,145,0.25);
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">👁️</div>
+    FaceAuth
+  </div>
+  <div class="header-right">
+    <div class="verified-badge">
+      <div class="verified-dot"></div>
+      Face Verified
+    </div>
+    <button class="logout-btn" onclick="logout()">Sign Out</button>
+  </div>
+</header>
+
+<main>
+  <div class="welcome-hero">
+    <div class="greeting">
+      <div class="greeting-dot"></div>
+      Welcome to our Platform
+    </div>
+    <div class="welcome-name" id="welcomeName">Loading...</div>
+    <p class="welcome-sub">Your identity has been verified using facial recognition. You're now securely logged in.</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-icon">🔐</span>
+      <div class="stat-label">Auth Method</div>
+      <div class="stat-value green">Face ID</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">✅</span>
+      <div class="stat-label">Match Score</div>
+      <div class="stat-value accent" id="matchScore">—</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">🕐</span>
+      <div class="stat-label">Login Time</div>
+      <div class="stat-value" id="loginTime">—</div>
+    </div>
+  </div>
+
+  <div class="info-panel">
+    <div class="panel-header">
+      <span>👤</span>
+      <h2>Account Information</h2>
+    </div>
+    <div class="panel-body">
+      <div class="info-grid">
+        <div class="info-field">
+          <label>Full Name</label>
+          <div class="value" id="infoName">—</div>
+        </div>
+        <div class="info-field">
+          <label>Email Address</label>
+          <div class="value" id="infoEmail">—</div>
+        </div>
+        <div class="info-field">
+          <label>User ID</label>
+          <div class="value" id="infoId" style="font-size:12px; font-family:monospace; color:var(--muted);">—</div>
+        </div>
+        <div class="info-field">
+          <label>Session</label>
+          <div class="value" style="color:var(--green)">Active</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="security-panel">
+    <div class="panel-header">
+      <span>🛡️</span>
+      <h2>Security Status</h2>
+    </div>
+    <div class="security-items">
+      <div class="security-item">
+        <div class="sec-icon green">👁️</div>
+        <div class="sec-info">
+          <strong>Face Recognition</strong>
+          <span>Biometric authentication via neural face encoding</span>
+        </div>
+        <span class="sec-badge enabled">Enabled</span>
+      </div>
+      <div class="security-item">
+        <div class="sec-icon blue">🎯</div>
+        <div class="sec-info">
+          <strong>Liveness Detection</strong>
+          <span>Anti-spoofing verified — live person confirmed</span>
+        </div>
+        <span class="sec-badge enabled">Passed</span>
+      </div>
+      <div class="security-item">
+        <div class="sec-icon purple">🔒</div>
+        <div class="sec-info">
+          <strong>Single Face Verification</strong>
+          <span>Only one face detected during authentication</span>
+        </div>
+        <span class="sec-badge enabled">Verified</span>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+// Load user data from session or URL params
+function loadUserData() {
+  const params = new URLSearchParams(window.location.search);
+  let user = null;
+
+  try {
+    const stored = sessionStorage.getItem('user');
+    if (stored) user = JSON.parse(stored);
+  } catch(e) {}
+
+  const name     = params.get('name') || (user && user.full_name) || 'User';
+  const email    = params.get('email') || (user && user.email) || '—';
+  const uid      = (user && user.user_id) || '—';
+  const conf     = (user && user.confidence) || '—';
+
+  document.getElementById('welcomeName').textContent = name;
+  document.getElementById('infoName').textContent    = name;
+  document.getElementById('infoEmail').textContent   = email;
+  document.getElementById('infoId').textContent      = uid;
+  document.getElementById('matchScore').textContent  = conf !== '—' ? conf + '%' : '—';
+  document.title = `Welcome, ${name} — FaceAuth`;
+
+  // Login time
+  const now = new Date();
+  document.getElementById('loginTime').textContent =
+    now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
+
+function logout() {
+  sessionStorage.removeItem('user');
+  window.location.href = 'index.html';
+}
+
+loadUserData();
+</script>
+</body>
+</html>
